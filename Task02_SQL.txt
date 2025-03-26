@@ -1,0 +1,125 @@
+SELECT * FROM [dbo].[certificates]
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+ALTER TABLE [dbo].[certificates]
+DROP COLUMN [ADDRESS1],[ADDRESS2],[ADDRESS3],[COUNTY],[LOCAL_AUTHORITY],[FLAT_STOREY_COUNT],
+                        [MAIN_HEATING_CONTROLS],[SHEATING_ENERGY_EFF], [SHEATING_ENV_EFF],
+                        [FLOOR_HEIGHT],[PHOTO_SUPPLY], [CONSTRUCTION_AGE_BAND],
+						[UPRN],[UPRN_SOURCE]
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+WITH duplicates AS (
+  SELECT *,
+         ROW_NUMBER() OVER (PARTITION BY [LMK_KEY],[POSTCODE],[BUILDING_REFERENCE_NUMBER],[CURRENT_ENERGY_RATING],[POTENTIAL_ENERGY_RATING],
+		 [CURRENT_ENERGY_EFFICIENCY],[PROPERTY_TYPE],[BUILT_FORM],[INSPECTION_DATE],[LODGEMENT_DATE] ORDER BY [LMK_KEY]) AS row_num
+  FROM [dbo].[certificates]
+)
+DELETE FROM duplicates
+WHERE row_num > 1;
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+select distinct [CURRENT_ENERGY_EFFICIENCY] from [dbo].[certificates];
+
+select distinct [POTENTIAL_ENERGY_EFFICIENCY] from [dbo].[certificates];
+
+-------------------------
+
+select distinct [ENVIRONMENT_IMPACT_CURRENT] from [dbo].[certificates];
+
+select distinct [ENVIRONMENT_IMPACT_POTENTIAL] from [dbo].[certificates];
+
+select distinct [ENERGY_CONSUMPTION_CURRENT] from [dbo].[certificates];
+
+select distinct [ENERGY_CONSUMPTION_POTENTIAL] from [dbo].[certificates];
+
+select distinct [CO2_EMISSIONS_CURRENT] from [dbo].[certificates];
+SELECT count(*) from [dbo].[certificates] where [CO2_EMISSIONS_CURRENT] is null;
+
+select distinct [ENERGY_CONSUMPTION_CURRENT] from [dbo].[certificates];
+SELECT count(*) from [dbo].[certificates] where [ENERGY_CONSUMPTION_CURRENT] is null;
+
+select distinct [ENERGY_CONSUMPTION_POTENTIAL] from [dbo].[certificates];
+SELECT count(*) from [dbo].[certificates] where [ENERGY_CONSUMPTION_POTENTIAL] is null;
+delete from [dbo].[certificates] where [ENERGY_CONSUMPTION_POTENTIAL] is null;
+
+select distinct [CO2_EMISS_CURR_PER_FLOOR_AREA] from [dbo].[certificates];
+
+select distinct [CO2_EMISSIONS_POTENTIAL] from [dbo].[certificates];
+
+select distinct [LIGHTING_COST_CURRENT] from [dbo].[certificates];
+SELECT count(*) from [dbo].[certificates] where [LIGHTING_COST_CURRENT] is null;
+delete from [dbo].[certificates] where [LIGHTING_COST_CURRENT] is null;
+
+select distinct [LIGHTING_COST_POTENTIAL] from [dbo].[certificates];
+
+select distinct [HEATING_COST_CURRENT] from [dbo].[certificates];
+SELECT count(*) from [dbo].[certificates] where [HEATING_COST_CURRENT] = '0';
+
+select distinct [HEATING_COST_POTENTIAL] from [dbo].[certificates];
+SELECT count(*) from [dbo].[certificates] where [HEATING_COST_POTENTIAL] = '0';
+
+select distinct [HOT_WATER_COST_CURRENT] from [dbo].[certificates];
+SELECT count(*) from [dbo].[certificates] where [HOT_WATER_COST_CURRENT]= '0' ;
+
+select distinct [HOT_WATER_COST_POTENTIAL] from [dbo].[certificates];
+
+select distinct [PROPERTY_TYPE] from [dbo].[certificates];
+
+select distinct [BUILT_FORM] from [dbo].[certificates];
+SELECT count(*) from [dbo].[certificates] where [BUILT_FORM] is null;
+delete from [dbo].[certificates] where [BUILT_FORM] is null;
+
+select distinct [CONSTITUENCY] from [dbo].[certificates];
+
+SELECT count(*) from [dbo].[certificates] where [INSPECTION_DATE] is null;
+SELECT count(*) from [dbo].[certificates] where [LODGEMENT_DATE] is null;
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+--Replace values
+
+UPDATE [dbo].[certificates]
+SET [FLOOR_LEVEL] = 
+    CASE 
+        WHEN [FLOOR_LEVEL] IN ('00', '0') THEN '0th'
+        WHEN [FLOOR_LEVEL] IN ('02', '2') THEN '2nd'
+        WHEN [FLOOR_LEVEL] IN ('1', '-1', '01') THEN '1st'
+        WHEN [FLOOR_LEVEL] IN ('3', '03') THEN '3rd'
+        WHEN [FLOOR_LEVEL] IN ('4', '04') THEN '4th'
+        WHEN [FLOOR_LEVEL] IN ('5', '05') THEN '5th'
+        WHEN [FLOOR_LEVEL] IN ('6', '06') THEN '6th'
+		WHEN [FLOOR_LEVEL] IN ('7', '07') THEN '7th'
+		WHEN [FLOOR_LEVEL] IN ('8', '08') THEN '8th'
+		WHEN [FLOOR_LEVEL] IN ('9', '09') THEN '9th'
+		WHEN [FLOOR_LEVEL] IN ('10') THEN '10th'
+		WHEN [FLOOR_LEVEL] IN ('11') THEN '11th'
+		WHEN [FLOOR_LEVEL] IN ('12') THEN '12th'
+		WHEN [FLOOR_LEVEL] IN ('13') THEN '13th'
+		WHEN [FLOOR_LEVEL] IN ('14') THEN '14th'
+		WHEN [FLOOR_LEVEL] IN ('15') THEN '15th'
+		WHEN [FLOOR_LEVEL] IN ('16') THEN '16th'
+		WHEN [FLOOR_LEVEL] IN ('17') THEN '17th'
+		WHEN [FLOOR_LEVEL] IN ('18') THEN '18th'
+		WHEN [FLOOR_LEVEL] IN ('19') THEN '19th'
+		WHEN [FLOOR_LEVEL] IN ('20') THEN '20th'
+		WHEN [FLOOR_LEVEL] IN ('20+') THEN '21st or above'
+	
+    END;
+
+select distinct [FLOOR_LEVEL] from [dbo].[certificates];
+SELECT count(*) from [dbo].[certificates] where [FLOOR_LEVEL] is null;
+
+UPDATE [dbo].[certificates]
+SET [FLOOR_LEVEL] = 'NO DATA!'
+WHERE [FLOOR_LEVEL] is NULL;
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+alter table [dbo].[certificates] alter column [INSPECTION_DATE] DATE;
+alter table [dbo].[certificates] alter column [LODGEMENT_DATE] DATE;
+
+delete from [dbo].[certificates] where [INSPECTION_DATE] <'2013-01-01' or [INSPECTION_DATE] >='2024-01-01';
